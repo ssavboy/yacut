@@ -2,6 +2,6 @@ from os import getenv
 
 
 class Config(object):
-    SQLALCHEMY_DATABASE_URI = getenv('DATABASE')
-    SQLALCHEMY_TRACK_MODIFICATIONS = getenv('TRACK_MODIFICATION')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite3'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = getenv('SECRET_KEY')
