@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, URLField
-from wtforms.validators import DataRequired, Length, Optional, Regexp, URL
+from wtforms.validators import URL, DataRequired, Length, Optional, Regexp
+
+from .const import PATTERN
 
 
 class URLForm(FlaskForm):
@@ -8,16 +10,16 @@ class URLForm(FlaskForm):
         'Поле для оригинальной ссылки',
         validators=[
             DataRequired('Обязательное поле для заполнения'),
-            URL(message='Некорректный url')
+            URL(message='Некорректная ссылка')
         ]
     )
     custom_id = URLField(
         'Поле для короткого идентификатора',
         validators=[
             Optional(),
-            Length(6),
+            Length(1, 6),
             Regexp(
-                regex=r'^[a-zA-z\d]{1,16}$',
+                regex=PATTERN,
                 message='Некорректные символы: только латинские буквы и цифры'
             )
         ]
