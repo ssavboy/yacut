@@ -1,4 +1,8 @@
 from os import getenv
+from string import ascii_letters, digits
+
+redirect_view = 'redirect_view'
+symbols = ascii_letters + digits
 
 
 class Config(object):
