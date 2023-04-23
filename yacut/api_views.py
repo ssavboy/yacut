@@ -17,7 +17,7 @@ def create_id():
     if 'url' not in data:
         raise InvalidAPIUsageError(URL_REQUIRED_FIELD)
     try:
-        url = URLMap.create_url_object(
+        url = URLMap.create(
             data.get('url'),
             data.get('custom_id')
         )
@@ -34,7 +34,7 @@ def create_id():
 
 @app.route('/api/id/<string:short>/', methods=['GET'])
 def get_url(short):
-    url_map = URLMap.get_short(short)
+    url_map = URLMap.get(short)
     if url_map is None:
         raise InvalidAPIUsageError('Указанный id не найден', 404)
     return jsonify({'url': url_map.original}), 200

@@ -38,7 +38,5 @@ class URLForm(FlaskForm):
     submit = SubmitField(CREATE)
 
     def validate_custom_id(self, field):
-        if not URLMap.validate_short(field.data):
-            raise ValidationError(INCORRECT_SHORT_LINK)
         if not URLMap.is_unique(field.data):
             raise ValidationError(ALREADY_TAKEN.format(field.data))

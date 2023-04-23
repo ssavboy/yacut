@@ -1,15 +1,13 @@
-import re
 from os import getenv
+from re import compile, escape
 from string import ascii_letters, digits
 
+SHORT_SIZE = 6
 CUSTOM_ID_LENGTH = 16
 SYMBOLS = ascii_letters + digits
-CUSTOM_ID_REGEX = re.compile(('^[' +
-                              re.escape(SYMBOLS) +
-                              ']{1,' + str(CUSTOM_ID_LENGTH) +
-                              '}$'))
+CUSTOM_ID_REGEX = compile('^[' + escape(SYMBOLS) + ']*$')
 REDIRECT_VIEW = 'redirect_view'
-ORIGINAL_LINK_LENGTH = 256
+ORIGINAL_LINK_LENGTH = 1000
 
 
 class Config(object):

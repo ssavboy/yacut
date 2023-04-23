@@ -1,4 +1,4 @@
-from flask import abort, redirect, render_template, url_for
+from flask import flash, redirect, render_template, url_for
 
 from settings import REDIRECT_VIEW
 
@@ -15,21 +15,20 @@ def index_view():
     if not form.validate_on_submit():
         return render_template('index.html', form=form)
     try:
-        url = URLMap.create_url_object(
-            form.original_link.data,
-            form.custom_id.data
+        return render_template(
+            'index.html',
+            form=form,
+            short_url=url_for(
+                REDIRECT_VIEW,
+                short=URLMap.create(
+                    form.original_link.data,
+                    form.custom_id.data
+                ).short,
+                _external=True
+            )
         )
     except (IncorrectOriginalException, IncorrectShortException, NonUniqueException):
-        abort(500)
-    return render_template(
-        'index.html',
-        form=form,
-        short_url=url_for(
-            REDIRECT_VIEW,
-            short=url.short,
-            _external=True
-        )
-    )
+        flash(f'Имя {form.custom_id.data} уже занято.')
 
 
 @app.route('/<string:short>', methods=['GET'])

@@ -3,12 +3,11 @@ from random import choices
 
 from flask import url_for
 
-from settings import (CUSTOM_ID_LENGTH, ORIGINAL_LINK_LENGTH, REDIRECT_VIEW,
-                      SYMBOLS)
+from settings import (CUSTOM_ID_LENGTH, CUSTOM_ID_REGEX, ORIGINAL_LINK_LENGTH,
+                      REDIRECT_VIEW, SHORT_SIZE, SYMBOLS)
 
 from . import db
-from .exceptions import (IncorrectOriginalException, IncorrectShortException,
-                         NonUniqueException)
+from .exceptions import IncorrectShortException, NonUniqueException
 
 NAME_ALREADY_EXISTS = 'Имя "{}" уже занято.'
 INCORRECT_NAME_SHORT_URL = 'Указано недопустимое имя для короткой ссылки'
@@ -31,42 +30,42 @@ class URLMap(db.Model):
         )
 
     @staticmethod
-    def get_short(custom_id):
-        return URLMap.query.filter_by(short=custom_id).first()
+    def get(short):
+        return URLMap.query.filter_by(short=short).first()
 
     @staticmethod
     def get_or_404(short):
         return URLMap.query.filter_by(short=short).first_or_404().original
 
     @staticmethod
-    def create_id():
-        return ''.join((choices(SYMBOLS, k=6)))
-
-    @staticmethod
     def validate_short(short):
         if len(short) > CUSTOM_ID_LENGTH:
-            return False
-        for char in short:
-            if char not in SYMBOLS:
-                return False
-        return True
+            raise IncorrectShortException()
+        if not CUSTOM_ID_REGEX.findall(short):
+            raise IncorrectShortException()
+        return short
 
     @staticmethod
     def is_unique(short):
         return not URLMap.query.filter_by(short=short).first()
 
     @staticmethod
-    def create_url_object(original, short=None):
-        if len(original) > ORIGINAL_LINK_LENGTH:
-            raise IncorrectOriginalException
+    def create_short():
+        short = ''.join((choices(SYMBOLS, k=SHORT_SIZE)))
+        if not URLMap.is_unique(short):
+            URLMap.create_short()
+        return short
+
+    @staticmethod
+    def create(original, short=None):
+
         if short:
-            if not URLMap.validate_short(short):
-                raise IncorrectShortException()
+            short = URLMap.validate_short(short)
             if not URLMap.is_unique(short):
                 raise NonUniqueException()
         url = URLMap(
             original=original,
-            short=short or URLMap.create_id()
+            short=short or URLMap.create_short()
         )
         db.session.add(url)
         db.session.commit()
