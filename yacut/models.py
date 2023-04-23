@@ -1,15 +1,14 @@
 from datetime import datetime
-from random import choice
-from re import match
+from random import choices
 
 from flask import url_for
 
-from settings import redirect_view, symbols
+from settings import (CUSTOM_ID_LENGTH, ORIGINAL_LINK_LENGTH, REDIRECT_VIEW,
+                      SYMBOLS)
 
 from . import db
-from .const import (CUSTOM_ID_LENGTH, CUSTOM_ID_REGEX, ORIGINAL_LINK_LENGTH,
-                    SHORT_ID_LENGTH)
-from .error_handlers import InvalidAPIUsageError
+from .exceptions import (IncorrectOriginalException, IncorrectShortException,
+                         NonUniqueException)
 
 NAME_ALREADY_EXISTS = 'Имя "{}" уже занято.'
 INCORRECT_NAME_SHORT_URL = 'Указано недопустимое имя для короткой ссылки'
@@ -25,7 +24,7 @@ class URLMap(db.Model):
         return dict(
             url=self.original,
             short_link=url_for(
-                redirect_view,
+                REDIRECT_VIEW,
                 short=self.short,
                 _external=True
             )
@@ -36,33 +35,39 @@ class URLMap(db.Model):
         return URLMap.query.filter_by(short=custom_id).first()
 
     @staticmethod
-    def get_short_or_404(short):
+    def get_or_404(short):
         return URLMap.query.filter_by(short=short).first_or_404().original
 
     @staticmethod
-    def get_unique_short_id():
-        return ''.join((choice(symbols) for _ in range(SHORT_ID_LENGTH)))
+    def create_id():
+        return ''.join((choices(SYMBOLS, k=6)))
 
     @staticmethod
-    def check_uniqueness_short_id(custom_id):
-        if not URLMap.get_short(custom_id):
-            return None
-        return custom_id
+    def validate_short(short):
+        if len(short) > CUSTOM_ID_LENGTH:
+            return False
+        for char in short:
+            if char not in SYMBOLS:
+                return False
+        return True
 
     @staticmethod
-    def micro_orm(data, custom_id):
+    def is_unique(short):
+        return not URLMap.query.filter_by(short=short).first()
 
-        if 'custom_id' not in data or custom_id is None:
-            data['custom_id'] = URLMap.get_unique_short_id()
-        if custom_id:
-            if URLMap.get_short(custom_id) is not None:
-                raise InvalidAPIUsageError(NAME_ALREADY_EXISTS.format(custom_id))
-            if not match(CUSTOM_ID_REGEX, custom_id) or len(custom_id) > CUSTOM_ID_LENGTH:
-                raise InvalidAPIUsageError(INCORRECT_NAME_SHORT_URL)
-        url_map = URLMap(
-            original=data['url'],
-            short=data['custom_id']
+    @staticmethod
+    def create_url_object(original, short=None):
+        if len(original) > ORIGINAL_LINK_LENGTH:
+            raise IncorrectOriginalException
+        if short:
+            if not URLMap.validate_short(short):
+                raise IncorrectShortException()
+            if not URLMap.is_unique(short):
+                raise NonUniqueException()
+        url = URLMap(
+            original=original,
+            short=short or URLMap.create_id()
         )
-        db.session.add(url_map)
+        db.session.add(url)
         db.session.commit()
-        return url_map
+        return url

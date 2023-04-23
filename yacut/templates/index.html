@@ -25,7 +25,7 @@
 								</p>
 							</div>
 							<div>
-								{{ form.custom_id(class="form-control form-control-lg py-2 mb-3", placeholder=form.custom_id.label.text) }} 
+								{{ form.custom_id(class="form-control form-control-lg py-2 mb-3", placeholder=form.custom_id.label.text) }}
 								<p>
                   {% for error in form.custom_id.errors %}
                     <span style="color:red">{{ error }}</span>
@@ -49,11 +49,11 @@
 				<div class="col-sm"></div>
 				<div class="col-sm">
 					<p class="text-center">
-						{% if new_link_ready_message %}
+						{% if short_url %}
 							<h5 class="text-center">
 								Ваша новая ссылка готова:
 							</h5>
-							<a href="{{ new_link_ready_message }}">{{ new_link_ready_message }}</a>
+							<a href="{{ short_url }}">{{ short_url }}</a>
 						{% endif %}
 					</p>
 				</div>

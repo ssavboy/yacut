@@ -2,7 +2,8 @@ from flask import jsonify, request
 
 from . import app
 from .error_handlers import InvalidAPIUsageError
-from .models import URLMap
+from .exceptions import IncorrectShortException, NonUniqueException
+from .models import INCORRECT_NAME_SHORT_URL, NAME_ALREADY_EXISTS, URLMap
 
 EMPTY_BODY_REQUEST = 'Отсутствует тело запроса'
 URL_REQUIRED_FIELD = '"url" является обязательным полем!'
@@ -15,9 +16,20 @@ def create_id():
         raise InvalidAPIUsageError(EMPTY_BODY_REQUEST)
     if 'url' not in data:
         raise InvalidAPIUsageError(URL_REQUIRED_FIELD)
-    custom_id = data.get('custom_id')
-    url_map = URLMap.micro_orm(data, custom_id)
-    return jsonify(url_map.to_dict()), 201
+    try:
+        url = URLMap.create_url_object(
+            data.get('url'),
+            data.get('custom_id')
+        )
+    except IncorrectShortException:
+        raise InvalidAPIUsageError(INCORRECT_NAME_SHORT_URL, 400)
+    except NonUniqueException:
+        raise InvalidAPIUsageError(
+            NAME_ALREADY_EXISTS.format(
+                data.get('custom_id')
+            ), 400
+        )
+    return jsonify(url.to_dict()), 201
 
 
 @app.route('/api/id/<string:short>/', methods=['GET'])
