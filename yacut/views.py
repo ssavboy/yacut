@@ -8,6 +8,8 @@ from .exceptions import (IncorrectOriginalException, IncorrectShortException,
 from .form import URLForm
 from .models import URLMap
 
+FLASH_MESSAGE = 'Имя {} уже занято.'
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
@@ -22,13 +24,15 @@ def index_view():
                 REDIRECT_VIEW,
                 short=URLMap.create(
                     form.original_link.data,
-                    form.custom_id.data
+                    form.custom_id.data,
+                    is_validate=False
                 ).short,
                 _external=True
             )
         )
-    except (IncorrectOriginalException, IncorrectShortException, NonUniqueException):
-        flash(f'Имя {form.custom_id.data} уже занято.')
+    except (IncorrectOriginalException, IncorrectShortException,
+            NonUniqueException) as error:
+        flash(FLASH_MESSAGE.format(error))
 
 
 @app.route('/<string:short>', methods=['GET'])

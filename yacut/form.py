@@ -3,7 +3,7 @@ from wtforms import SubmitField, URLField
 from wtforms.validators import (URL, DataRequired, Length, Optional, Regexp,
                                 ValidationError)
 
-from settings import CUSTOM_ID_LENGTH, CUSTOM_ID_REGEX, ORIGINAL_LINK_LENGTH
+from settings import ORIGINAL_LINK_LENGTH, SHORT_LENGTH, SHORT_REGEX
 from yacut.models import URLMap
 
 ALREADY_TAKEN = 'Имя {} уже занято!'
@@ -28,9 +28,9 @@ class URLForm(FlaskForm):
         FIELD_SHORT_ID,
         validators=[
             Optional(),
-            Length(max=CUSTOM_ID_LENGTH),
+            Length(max=SHORT_LENGTH),
             Regexp(
-                regex=CUSTOM_ID_REGEX,
+                regex=SHORT_REGEX,
                 message=INCORRECT_SHORT_LINK
             )
         ]

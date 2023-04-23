@@ -3,11 +3,11 @@ from re import compile, escape
 from string import ascii_letters, digits
 
 SHORT_SIZE = 6
-CUSTOM_ID_LENGTH = 16
+SHORT_LENGTH = 16
 SYMBOLS = ascii_letters + digits
-CUSTOM_ID_REGEX = compile('^[' + escape(SYMBOLS) + ']*$')
+SHORT_REGEX = compile('^[' + escape(SYMBOLS) + ']*$')
 REDIRECT_VIEW = 'redirect_view'
-ORIGINAL_LINK_LENGTH = 1000
+ORIGINAL_LINK_LENGTH = 2048
 
 
 class Config(object):
