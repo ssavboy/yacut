@@ -4,13 +4,10 @@ from string import ascii_letters, digits
 
 CUSTOM_ID_LENGTH = 16
 SYMBOLS = ascii_letters + digits
-CUSTOM_ID_REGEX = re.compile(
-    "^["
-    + re.escape(SYMBOLS)
-    + "]{1,"
-    + str(CUSTOM_ID_LENGTH)
-    + "}$"
-)
+CUSTOM_ID_REGEX = re.compile(('^['
+                              + re.escape(SYMBOLS)
+                              + ']{1,' + str(CUSTOM_ID_LENGTH)
+                              + '}$'))
 REDIRECT_VIEW = 'redirect_view'
 ORIGINAL_LINK_LENGTH = 256
 
