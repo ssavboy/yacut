@@ -34,7 +34,7 @@ def index_view():
     except IncorrectShortException as error:
         flash(error)
     except NonUniqueException:
-        flash(FLASH_MESSAGE.format(URLMap.short))
+        flash(FLASH_MESSAGE.format(form.custom_id.data))
 
 
 @app.route('/<string:short>', methods=['GET'])

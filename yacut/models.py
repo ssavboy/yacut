@@ -11,6 +11,9 @@ from settings import (ORIGINAL_LINK_LENGTH, REDIRECT_VIEW, SHORT_LENGTH,
 
 NAME_ALREADY_EXISTS = 'Имя "{}" уже занято.'
 INCORRECT_NAME_SHORT_URL = 'Указано недопустимое имя для короткой ссылки'
+INCORRECT_SYMBOLS = 'Используется некорректные символы'
+CANT_GENERATE = 'Не удалось сгенерировать короткий идентификатор'
+SYMBOLS_LIMIT = '{} ссылка превысила лимит количества символов'
 
 
 class URLMap(db.Model):
@@ -43,27 +46,30 @@ class URLMap(db.Model):
             short = ''.join((choices(SYMBOLS, k=SHORT_SIZE)))
             if not URLMap.get(short):
                 return short
-        raise IncorrectShortException('Не удалось сгенерировать короткий'
-                                      ' идентификатор')
+        raise IncorrectShortException(CANT_GENERATE)
 
     @staticmethod
     def create(original, short=None, is_validate=True):
         if is_validate:
             if len(original) > ORIGINAL_LINK_LENGTH:
                 raise IncorrectOriginalException(
-                    'Оригинальная ссылка превысила лимит количества символов'
+                    SYMBOLS_LIMIT.format('Оригинальная')
                 )
             if short:
                 if len(short) > SHORT_LENGTH:
-                    raise IncorrectShortException()
+                    raise IncorrectShortException(
+                        SYMBOLS_LIMIT.format('Короткая')
+                    )
                 if not SHORT_REGEX.match(short):
-                    raise IncorrectShortException()
+                    raise IncorrectShortException(INCORRECT_SYMBOLS)
                 if URLMap.get(short):
-                    raise NonUniqueException()
-        url = URLMap(
+                    raise NonUniqueException(
+                        NAME_ALREADY_EXISTS.format(short)
+                    )
+        url_map = URLMap(
             original=original,
             short=short or URLMap.create_short()
         )
-        db.session.add(url)
+        db.session.add(url_map)
         db.session.commit()
-        return url
+        return url_map
