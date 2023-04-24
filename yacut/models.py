@@ -3,12 +3,11 @@ from random import choices
 
 from flask import url_for
 
-from settings import (ORIGINAL_LINK_LENGTH, REDIRECT_VIEW, SHORT_LENGTH,
-                      SHORT_REGEX, SHORT_SIZE, SYMBOLS)
-
 from . import db
 from .exceptions import (IncorrectOriginalException, IncorrectShortException,
                          NonUniqueException)
+from settings import (ORIGINAL_LINK_LENGTH, REDIRECT_VIEW, SHORT_LENGTH,
+                      SHORT_REGEX, SHORT_SIZE, SYMBOLS)
 
 NAME_ALREADY_EXISTS = 'Имя "{}" уже занято.'
 INCORRECT_NAME_SHORT_URL = 'Указано недопустимое имя для короткой ссылки'
@@ -39,28 +38,27 @@ class URLMap(db.Model):
         return URLMap.query.filter_by(short=short).first_or_404().original
 
     @staticmethod
-    def is_unique(short):
-        return not URLMap.query.filter_by(short=short).first()
-
-    @staticmethod
     def create_short():
         for _ in range(SHORT_SIZE):
             short = ''.join((choices(SYMBOLS, k=SHORT_SIZE)))
-            if not URLMap.is_unique(short):
-                raise NonUniqueException()
-        return short
+            if not URLMap.get(short):
+                return short
+        raise IncorrectShortException('Не удалось сгенерировать короткий'
+                                      ' идентификатор')
 
     @staticmethod
     def create(original, short=None, is_validate=True):
         if is_validate:
             if len(original) > ORIGINAL_LINK_LENGTH:
-                raise IncorrectOriginalException()
+                raise IncorrectOriginalException(
+                    'Оригинальная ссылка превысила лимит количества символов'
+                )
             if short:
                 if len(short) > SHORT_LENGTH:
                     raise IncorrectShortException()
                 if not SHORT_REGEX.match(short):
                     raise IncorrectShortException()
-                if not URLMap.is_unique(short):
+                if URLMap.get(short):
                     raise NonUniqueException()
         url = URLMap(
             original=original,

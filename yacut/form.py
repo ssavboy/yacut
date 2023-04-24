@@ -3,8 +3,8 @@ from wtforms import SubmitField, URLField
 from wtforms.validators import (URL, DataRequired, Length, Optional, Regexp,
                                 ValidationError)
 
+from .models import URLMap
 from settings import ORIGINAL_LINK_LENGTH, SHORT_LENGTH, SHORT_REGEX
-from yacut.models import URLMap
 
 ALREADY_TAKEN = 'Имя {} уже занято!'
 FIELD_ORIGINAL_LINK = 'Поле для оригинальной ссылки'
@@ -38,5 +38,5 @@ class URLForm(FlaskForm):
     submit = SubmitField(CREATE)
 
     def validate_custom_id(self, field):
-        if not URLMap.is_unique(field.data):
+        if URLMap.get(field.data):
             raise ValidationError(ALREADY_TAKEN.format(field.data))

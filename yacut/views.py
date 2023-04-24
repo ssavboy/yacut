@@ -1,12 +1,11 @@
 from flask import flash, redirect, render_template, url_for
 
-from settings import REDIRECT_VIEW
-
 from . import app
 from .exceptions import (IncorrectOriginalException, IncorrectShortException,
                          NonUniqueException)
 from .form import URLForm
 from .models import URLMap
+from settings import REDIRECT_VIEW
 
 FLASH_MESSAGE = 'Имя {} уже занято.'
 
@@ -30,9 +29,12 @@ def index_view():
                 _external=True
             )
         )
-    except (IncorrectOriginalException, IncorrectShortException,
-            NonUniqueException) as error:
-        flash(FLASH_MESSAGE.format(error))
+    except IncorrectOriginalException as error:
+        flash(error)
+    except IncorrectShortException as error:
+        flash(error)
+    except NonUniqueException:
+        flash(FLASH_MESSAGE.format(URLMap.short))
 
 
 @app.route('/<string:short>', methods=['GET'])
